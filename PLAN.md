@@ -202,11 +202,11 @@ river-math/
 - [x] `rivermath bench`: hands/sec for each evaluator on the same shuffled set of hands
 - [x] Benchmark table in README (machine + compiler noted)
 
-### M3: Equity
-- [ ] `rm_equity`: exact enumeration (all hands known) and Monte Carlo (any random player)
-- [ ] Equity tests (reference matchups, board-plays 50/50, MC vs exact)
-- [ ] `rivermath equity`
-- [ ] Fill in the resume numbers → **v1 done**
+### M3: Equity ✅
+- [x] `rm_equity`: exact enumeration (all hands known) and Monte Carlo (any random player)
+- [x] Equity tests (reference matchups, board-plays 50/50, MC vs exact)
+- [x] `rivermath equity`
+- [x] Fill in the resume numbers → **v1 done**
 
 ---
 
@@ -223,9 +223,9 @@ river-math/
 
 ---
 
-## 8. Resume wording (fill in after M3)
+## 8. Resume wording (numbers from `rivermath bench`, Nov 10 2026)
 
 > **RiverMath: Poker Hand Evaluator & Equity Calculator** (C)
-> - Built a Texas Hold'em evaluator in C using 64-bit bitmasks and optimized hand-ranking algorithms, reaching **___M hands/sec** single-threaded.
+> - Built a Texas Hold'em evaluator in C using 64-bit bitmasks and optimized hand-ranking algorithms, reaching **370M+ hands/sec** single-threaded on an Apple M3.
 > - Implemented 3 evaluation algorithms (combinatorial, bitwise, perfect-hash lookup), verified identical across all 133.8M 7-card hands.
 > - Developed a 9-player equity calculator using exact board enumeration and 1M+ Monte Carlo simulations, with automated correctness testing in CI.

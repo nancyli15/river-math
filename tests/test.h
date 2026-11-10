@@ -15,8 +15,11 @@
  */
 
 #include <stdbool.h>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "rivermath/card.h"
 
 extern int rm_test_checks;
 extern int rm_test_failures;
@@ -52,6 +55,17 @@ extern int rm_test_failures;
         }                                                                  \
     } while (0)
 
+#define CHECK_NEAR(actual, expected, tolerance)                                \
+    do {                                                                   \
+        double actual_ = (actual), expected_ = (expected);                 \
+        rm_test_checks++;                                                  \
+        if (fabs(actual_ - expected_) > (tolerance)) {                     \
+            rm_test_failures++;                                            \
+            fprintf(stderr, "  FAIL %s:%d: %s == %.6f, expected %.6f\n",   \
+                    __FILE__, __LINE__, #actual, actual_, expected_);      \
+        }                                                                  \
+    } while (0)
+
 #define RUN_TEST(fn)                                                       \
     do {                                                                   \
         int failures_before_ = rm_test_failures;                                    \
@@ -59,11 +73,15 @@ extern int rm_test_failures;
         printf("  %-40s %s\n", #fn, rm_test_failures == failures_before_ ? "ok" : "FAILED"); \
     } while (0)
 
+/* Parse test cards like "Ah Kd"; aborts on a typo so a bad test can't pass silently. */
+rm_cards test_cards(const char *text);
+
 /* Suites (one per test_*.c file). */
 void suite_bits(void);
 void suite_card(void);
 void suite_random(void);
 void suite_evaluate(void);
 void suite_evaluate_full(void); /* slow: every 7-card hand */
+void suite_equity(void);
 
 #endif /* RIVERMATH_TEST_H */

@@ -65,10 +65,10 @@ $(LIB): $(LIB_OBJ)
 	$(AR) rcs $@ $^
 
 $(CLI): $(CLI_OBJ) $(LIB)
-	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
+	$(CC) $(CFLAGS) $^ $(LDFLAGS) -lm -o $@
 
 $(TESTS): $(TEST_OBJ) $(LIB)
-	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
+	$(CC) $(CFLAGS) $^ $(LDFLAGS) -lm -o $@
 
 $(OUT)/%.o: %.c
 	@mkdir -p $(@D)

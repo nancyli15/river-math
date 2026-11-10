@@ -4,10 +4,11 @@
 #include <time.h>
 
 #include "rivermath/card.h"
+#include "rivermath/equity.h"
 #include "rivermath/evaluate.h"
 #include "rivermath/random.h"
 
-#define RM_VERSION "0.1.0"
+#define RM_VERSION "1.0.0"
 
 enum { EXIT_BAD_INPUT = 1, EXIT_BAD_USAGE = 2 };
 
@@ -18,6 +19,9 @@ static void usage(FILE *out) {
             "usage:\n"
             "  rivermath cards <cards>    parse and show cards, e.g. rivermath cards AhKd\n"
             "  rivermath eval <cards>     score a 5 to 7 card hand, e.g. rivermath eval AhKhQhJhTh2c3d\n"
+            "  rivermath equity <player>... [--board <cards>] [--dead <cards>] [--samples N] [--seed N]\n"
+            "                             each player is 2 cards (AhAs) or \"random\", 2 to 9 players\n"
+            "                             e.g. rivermath equity AhAs KdKc --board 2h7c9s\n"
             "  rivermath bench            measure 7-card hands/sec for each evaluator\n"
             "  rivermath --version\n"
             "  rivermath --help\n"
@@ -82,15 +86,106 @@ static int command_eval(int num_args, char **args) {
     return 0;
 }
 
-/* ---- bench ------------------------------------------------------------------ */
-
-enum { BENCH_NUM_HANDS = 1 << 20, BENCH_NUM_ROUNDS = 5, BENCH_SEED = 12345 };
-
 static double seconds_now(void) {
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
     return (double)now.tv_sec + (double)now.tv_nsec / 1e9;
 }
+
+/* ---- equity ------------------------------------------------------------------ */
+
+enum { EQUITY_BAR_WIDTH = 30 };
+
+/* Parse a whole-number option value. Returns false (with a message) if it isn't one. */
+static bool parse_count(const char *option, const char *text, uint64_t *out) {
+    char *end;
+    *out = strtoull(text, &end, 10);
+    if (*text == '\0' || *end != '\0' || *text == '-') {
+        fprintf(stderr, "error: %s needs a whole number, got \"%s\"\n", option, text);
+        return false;
+    }
+    return true;
+}
+
+/* Fill input from the command line. Returns false (with a message) on bad input. */
+static bool parse_equity_args(int num_args, char **args, rm_equity_input *input) {
+    for (int i = 0; i < num_args; i++) {
+        const char *arg = args[i];
+        bool is_option = strncmp(arg, "--", 2) == 0;
+        if (is_option && i + 1 >= num_args) {
+            fprintf(stderr, "error: %s needs a value\n", arg);
+            return false;
+        }
+        if (strcmp(arg, "--board") == 0) {
+            if (parse_card_args(1, &args[++i], &input->board) < 0) return false;
+        } else if (strcmp(arg, "--dead") == 0) {
+            if (parse_card_args(1, &args[++i], &input->dead_cards) < 0) return false;
+        } else if (strcmp(arg, "--samples") == 0) {
+            if (!parse_count(arg, args[++i], &input->num_samples)) return false;
+        } else if (strcmp(arg, "--seed") == 0) {
+            if (!parse_count(arg, args[++i], &input->seed)) return false;
+        } else if (is_option) {
+            fprintf(stderr, "error: unknown option %s\n", arg);
+            return false;
+        } else if (input->num_players == RM_MAX_PLAYERS) {
+            fprintf(stderr, "error: at most %d players\n", RM_MAX_PLAYERS);
+            return false;
+        } else if (strcmp(arg, "random") == 0) {
+            input->hole_cards[input->num_players++] = 0;
+        } else {
+            if (parse_card_args(1, &args[i], &input->hole_cards[input->num_players]) < 0)
+                return false;
+            input->num_players++;
+        }
+    }
+    return true;
+}
+
+static void print_equity_bar(double equity) {
+    int width = (int)(equity * EQUITY_BAR_WIDTH + 0.5);
+    for (int i = 0; i < width; i++) printf("█");
+}
+
+static int command_equity(int num_args, char **args) {
+    rm_equity_input input = {0};
+    if (!parse_equity_args(num_args, args, &input)) return EXIT_BAD_INPUT;
+
+    rm_lookup_table_bytes(); /* build the lookup tables once, outside the timing */
+    rm_equity_result result;
+    double start = seconds_now();
+    int error = rm_equity(&input, &result);
+    double elapsed = seconds_now() - start;
+    if (error) {
+        fprintf(stderr, "error: %s\n", rm_equity_error_message(error));
+        return EXIT_BAD_INPUT;
+    }
+
+    char board_text[16];
+    rm_format_cards(input.board, board_text, sizeof board_text);
+    printf("Board: %s   ", input.board ? board_text : "(none)");
+    if (result.was_exact)
+        printf("Mode: exact (%llu boards)", (unsigned long long)result.num_deals);
+    else
+        printf("Mode: Monte Carlo (%llu samples, seed %llu)", (unsigned long long)result.num_deals,
+               (unsigned long long)input.seed);
+    printf("   %.0f ms\n\n", elapsed * 1e3);
+
+    printf("Player  Hand      Win      Tie   Equity\n");
+    for (int player = 0; player < input.num_players; player++) {
+        char hand_text[8];
+        rm_format_cards(input.hole_cards[player], hand_text, sizeof hand_text);
+        printf("  %d     %-6s %6.2f%%  %5.2f%%  %6.2f%%  ", player + 1,
+               input.hole_cards[player] ? hand_text : "random", result.win[player] * 100,
+               result.tie[player] * 100, result.equity[player] * 100);
+        print_equity_bar(result.equity[player]);
+        printf("\n");
+    }
+    return 0;
+}
+
+/* ---- bench ------------------------------------------------------------------ */
+
+enum { BENCH_NUM_HANDS = 1 << 20, BENCH_NUM_ROUNDS = 5, BENCH_SEED = 12345 };
 
 static int compare_doubles(const void *a, const void *b) {
     double x = *(const double *)a, y = *(const double *)b;
@@ -186,6 +281,7 @@ int main(int argc, char **argv) {
     }
     if (strcmp(command, "cards") == 0) return command_cards(num_args, args);
     if (strcmp(command, "eval") == 0) return command_eval(num_args, args);
+    if (strcmp(command, "equity") == 0) return command_equity(num_args, args);
     if (strcmp(command, "bench") == 0) return command_bench();
 
     fprintf(stderr, "error: unknown command \"%s\"\n\n", command);

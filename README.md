@@ -4,8 +4,9 @@
 
 A fast Texas Hold'em hand evaluator and multi-player equity calculator in C.
 
-> Status: **M2 done**. Three evaluators (naive, bitwise, perfect-hash lookup) agree on all
-> 133,784,560 seven-card hands. The equity calculator is coming. See [PLAN.md](PLAN.md) for the roadmap and
+> Status: **v1 done**. Three evaluators (naive, bitwise, perfect-hash lookup) agree on all
+> 133,784,560 seven-card hands, and a 2 to 9 player equity calculator uses exact enumeration
+> or Monte Carlo. See [PLAN.md](PLAN.md) for the roadmap and
 > [CONCEPTS.md](CONCEPTS.md) for the poker, math and algorithms background.
 
 ## Build
@@ -33,6 +34,14 @@ Apple M3, Apple clang 21, `-O3`. Lowest of two runs shown:
 
 The lookup tables are built at startup in about 250 ms.
 
+Equity (same machine, lookup evaluator, table build excluded):
+
+| Spot | Mode | Time |
+|---|---|---|
+| AA vs KK preflop | exact, 1,712,304 boards | 19 ms |
+| 9 known hands preflop | exact, 278,256 boards | 11 ms |
+| AA vs 8 random hands | Monte Carlo, 1,000,000 samples | ~330 ms |
+
 ## Usage
 
 ```
@@ -45,7 +54,17 @@ $ ./build/release/rivermath eval Kc Kd 9h 9s 4c 4d 2h
 Hand:   KcKd9h9s4c4d2h
 Result: Two pair (K, 9, 4)
 Value:  0x2b7200 (bigger is better)
+
+$ ./build/release/rivermath equity AhAs KdKc
+Board: (none)   Mode: exact (1712304 boards)   19 ms
+
+Player  Hand      Win      Tie   Equity
+  1     AhAs    81.06%   0.38%   81.26%  ████████████████████████
+  2     KcKd    18.55%   0.38%   18.74%  ██████
 ```
+
+Each player is two cards (`AhAs`) or `random`. Options: `--board`, `--dead`, `--samples`, `--seed`.
+If every hand is known the answer is exact; any `random` player switches to Monte Carlo.
 
 Cards are written as rank + suit: ranks `23456789TJQKA`, suits `c d h s`.
 

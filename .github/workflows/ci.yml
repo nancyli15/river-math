@@ -30,4 +30,6 @@ jobs:
       - name: Test every 7-card hand (release)
         run: make test-full
       - name: CLI smoke test
-        run: ./build/release/rivermath eval AhKhQhJhTh2c3d
+        run: |
+          ./build/release/rivermath eval AhKhQhJhTh2c3d
+          ./build/release/rivermath equity AhAs KdKc --board 2h7c9s

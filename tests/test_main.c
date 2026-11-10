@@ -1,7 +1,18 @@
+#include <stdlib.h>
+
 #include "test.h"
 
 int rm_test_checks = 0;
 int rm_test_failures = 0;
+
+rm_cards test_cards(const char *text) {
+    rm_cards cards = 0;
+    if (rm_parse_cards(text, &cards) < 0) {
+        fprintf(stderr, "bad test cards: %s\n", text);
+        abort();
+    }
+    return cards;
+}
 
 /* Pass --full to also run the slow exhaustive suites (make test-full). */
 int main(int argc, char **argv) {
@@ -15,6 +26,8 @@ int main(int argc, char **argv) {
     suite_random();
     printf("evaluate\n");
     suite_evaluate();
+    printf("equity\n");
+    suite_equity();
     if (run_full) {
         printf("evaluate (full)\n");
         suite_evaluate_full();

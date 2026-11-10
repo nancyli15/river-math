@@ -18,20 +18,11 @@ static const named_evaluator EVALUATORS[] = {
 };
 enum { NUM_EVALUATORS = sizeof EVALUATORS / sizeof EVALUATORS[0] };
 
-static rm_cards cards_from(const char *text) {
-    rm_cards cards = 0;
-    if (rm_parse_cards(text, &cards) < 0) {
-        fprintf(stderr, "bad test cards: %s\n", text);
-        abort();
-    }
-    return cards;
-}
-
 /* Describe the hand with every evaluator and compare with the expected text. */
 static void check_hand(const char *cards_text, const char *expected_description) {
     char description[64];
     for (int i = 0; i < NUM_EVALUATORS; i++) {
-        rm_describe_hand_value(EVALUATORS[i].evaluate(cards_from(cards_text)), description,
+        rm_describe_hand_value(EVALUATORS[i].evaluate(test_cards(cards_text)), description,
                                sizeof description);
         if (strcmp(description, expected_description) != 0)
             fprintf(stderr, "  %s evaluator, hand %s:\n", EVALUATORS[i].name, cards_text);
@@ -43,8 +34,8 @@ static void check_hand(const char *cards_text, const char *expected_description)
 static int compare_hands(const char *hand_a, const char *hand_b) {
     int results[NUM_EVALUATORS];
     for (int i = 0; i < NUM_EVALUATORS; i++) {
-        rm_hand_value a = EVALUATORS[i].evaluate(cards_from(hand_a));
-        rm_hand_value b = EVALUATORS[i].evaluate(cards_from(hand_b));
+        rm_hand_value a = EVALUATORS[i].evaluate(test_cards(hand_a));
+        rm_hand_value b = EVALUATORS[i].evaluate(test_cards(hand_b));
         results[i] = (a > b) - (a < b);
         CHECK_EQ(results[i], results[0]);
     }
@@ -109,7 +100,7 @@ static void test_comparisons(void) {
 
 static void test_describe(void) {
     char text[8];
-    int full_length = rm_describe_hand_value(rm_evaluate_bitwise(cards_from("Qs Qh Qd 4c 4s")),
+    int full_length = rm_describe_hand_value(rm_evaluate_bitwise(test_cards("Qs Qh Qd 4c 4s")),
                                              text, sizeof text);
     CHECK_EQ(full_length, (int)strlen("Full house (Q, 4)"));
     CHECK_STR(text, "Full ho"); /* truncated like snprintf */
