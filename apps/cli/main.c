@@ -1,3 +1,6 @@
+/* Linux hides clock_gettime under strict -std=c17 unless POSIX features are requested. */
+#define _POSIX_C_SOURCE 200809L
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -9,6 +9,22 @@ A fast Texas Hold'em hand evaluator and multi-player equity calculator in C.
 > or Monte Carlo. See [PLAN.md](PLAN.md) for the roadmap and
 > [CONCEPTS.md](CONCEPTS.md) for the poker, math and algorithms background.
 
+## Try it
+
+Needs a C compiler and `make` (on a Mac, install the Xcode command line tools with `xcode-select --install`).
+
+```sh
+git clone https://github.com/nancyli15/river-math.git && cd river-math
+make
+
+./build/release/rivermath eval Kc Kd 9h 9s 4c 4d 2h       # score a hand -> Two pair (K, 9, 4)
+./build/release/rivermath equity AhAs KdKc                # who wins? exact, every possible board
+./build/release/rivermath equity AhAs random random       # against unknown hands: 1M simulated deals
+./build/release/rivermath bench                           # hands per second on your machine
+```
+
+Cards are rank + suit: ranks `23456789TJQKA`, suits `c d h s`. So `AhAs` is the ace of hearts and ace of spades.
+
 ## Build
 
 Requires a C17 compiler (clang or gcc) and `make`. There are no other dependencies.
