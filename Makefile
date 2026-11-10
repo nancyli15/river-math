@@ -2,6 +2,7 @@
 #
 #   make              release build of the CLI      -> build/release/rivermath
 #   make test         debug build + sanitizers, run the test suite
+#   make test-full    release build, also check every 7-card hand (~1 min)
 #   make run ARGS=".." build and run the CLI, e.g. make run ARGS="cards AhKd"
 #   make clean
 #
@@ -40,7 +41,7 @@ LIB      := $(OUT)/librivermath.a
 CLI      := $(OUT)/rivermath
 TESTS    := $(OUT)/rivermath_tests
 
-.PHONY: all cli test run clean
+.PHONY: all cli test test-full run clean
 
 all: cli
 
@@ -50,6 +51,11 @@ cli: $(CLI)
 test:
 	@$(MAKE) --no-print-directory BUILD=debug build/debug/rivermath_tests
 	./build/debug/rivermath_tests
+
+# The exhaustive 133M-hand checks are too slow under sanitizers, so use the release build.
+test-full:
+	@$(MAKE) --no-print-directory BUILD=release build/release/rivermath_tests
+	./build/release/rivermath_tests --full
 
 run: $(CLI)
 	./$(CLI) $(ARGS)

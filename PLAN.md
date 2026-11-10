@@ -189,12 +189,12 @@ river-math/
 - [x] Test harness, CI workflow, `.gitignore`, README
 - [x] `card.c`: parse/format, bitmask helpers, plus tests
 
-### M1: Two evaluators
-- [ ] `hand_value.c`: value encoding, category names, straight-high helper
-- [ ] Naive evaluator
-- [ ] Bitwise evaluator
-- [ ] Edge-case tests, 5-card counts, 7-card counts + naive == bitwise (`make test-full`)
-- [ ] `rivermath eval`
+### M1: Two evaluators ✅
+- [x] `hand_value.c`: value encoding, category names, straight-high helper
+- [x] Naive evaluator
+- [x] Bitwise evaluator
+- [x] Edge-case tests, 5-card counts, 7-card counts + naive == bitwise (`make test-full`)
+- [x] `rivermath eval`
 
 ### M2: Lookup evaluator + benchmark
 - [ ] Rank weights + displacement table, built at startup from the bitwise evaluator
