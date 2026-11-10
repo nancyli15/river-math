@@ -6,8 +6,7 @@ A fast Texas Hold'em hand evaluator and multi-player equity calculator in C.
 
 > Status: **v1 done**. Three evaluators (naive, bitwise, perfect-hash lookup) agree on all
 > 133,784,560 seven-card hands, and a 2 to 9 player equity calculator uses exact enumeration
-> or Monte Carlo. See [PLAN.md](PLAN.md) for the roadmap and
-> [CONCEPTS.md](CONCEPTS.md) for the poker, math and algorithms background.
+> or Monte Carlo.
 
 ## Try it
 
