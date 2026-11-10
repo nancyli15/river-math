@@ -67,4 +67,14 @@ rm_hand_value rm_evaluate_naive(rm_cards hand);
 /* Fast evaluator: all cards at once with bit tricks. Works for 5 to 7 cards. */
 rm_hand_value rm_evaluate_bitwise(rm_cards hand);
 
+/*
+ * Table evaluator: a few table reads per hand (perfect hash, see evaluate_lookup.c).
+ * Built for 7-card hands; 5 or 6 cards fall back to the bitwise evaluator.
+ * The tables are built on the first call, which is not thread-safe.
+ */
+rm_hand_value rm_evaluate_lookup(rm_cards hand);
+
+/* Memory used by the lookup tables, in bytes (builds them if needed). */
+size_t rm_lookup_table_bytes(void);
+
 #endif /* RIVERMATH_EVALUATE_H */

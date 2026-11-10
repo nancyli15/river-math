@@ -1,16 +1,4 @@
-# Build output
-build/
-*.o
-*.d
-*.a
-*.dSYM/
+CONCEPTS.md
+PLAN.md
 
-# Editors / OS
-.DS_Store
-.vscode/
-.idea/
-compile_commands.json
-.cache/
-
-# Personal Claude Code settings
-.claude/settings.local.json
+/.claude

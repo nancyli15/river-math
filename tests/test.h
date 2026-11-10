@@ -62,6 +62,7 @@ extern int rm_test_failures;
 /* Suites (one per test_*.c file). */
 void suite_bits(void);
 void suite_card(void);
+void suite_random(void);
 void suite_evaluate(void);
 void suite_evaluate_full(void); /* slow: every 7-card hand */
 

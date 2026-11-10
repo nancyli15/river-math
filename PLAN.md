@@ -19,8 +19,8 @@ The goal of v1 is the **smallest app that makes every resume bullet true**. Ever
 
 **v1 file list (complete):**
 ```
-include/rivermath/  bits.h  card.h  evaluate.h  equity.h
-src/                card.c  evaluate_naive.c  evaluate_bitwise.c  evaluate_lookup.c  hand_value.c  equity.c
+include/rivermath/  bits.h  card.h  evaluate.h  random.h  equity.h
+src/                card.c  evaluate_naive.c  evaluate_bitwise.c  evaluate_lookup.c  hand_value.c  random.c  equity.c
 apps/cli/main.c     commands: cards, eval, equity, bench
 tests/              test_card.c  test_evaluate.c  test_equity.c
 ```
@@ -38,7 +38,7 @@ build-time table generator, separate bench binary.
 - **Build:** plain GNU Make (`make`, `make test`, `make run ARGS="..."`). Release builds go to `build/release/`, and debug+sanitizer builds to `build/debug/`.
 - **Compilers:** clang (macOS) and gcc (CI). Use `-O3` for release and `-O1 -g -fsanitize=address,undefined` for tests.
 - **Bit ops:** `__builtin_popcountll`, `__builtin_ctzll`, `__builtin_clzll`, wrapped in `bits.h`.
-- **RNG:** xoshiro256** seeded with SplitMix64 (about 20 lines, a private part of `equity.c`). Don't use `rand()`.
+- **RNG:** xoshiro256** seeded with SplitMix64, in `random.c`, shared by the benchmark and Monte Carlo. Don't use `rand()`.
 - **Tests:** our own small harness (`tests/test.h`).
 - **Timing:** `clock_gettime(CLOCK_MONOTONIC)`.
 - **CI:** GitHub Actions running gcc + clang on Ubuntu and clang on macOS.
@@ -196,15 +196,14 @@ river-math/
 - [x] Edge-case tests, 5-card counts, 7-card counts + naive == bitwise (`make test-full`)
 - [x] `rivermath eval`
 
-### M2: Lookup evaluator + benchmark
-- [ ] Rank weights + displacement table, built at startup from the bitwise evaluator
-- [ ] Cross-check lookup == bitwise on all 7-card hands
-- [ ] `rivermath bench`: hands/sec for each evaluator on the same shuffled set of hands
-- [ ] Benchmark table in README (machine + compiler noted)
+### M2: Lookup evaluator + benchmark ✅
+- [x] Rank weights + displacement table, built at startup from the bitwise evaluator
+- [x] Cross-check lookup == bitwise on all 7-card hands
+- [x] `rivermath bench`: hands/sec for each evaluator on the same shuffled set of hands
+- [x] Benchmark table in README (machine + compiler noted)
 
 ### M3: Equity
 - [ ] `rm_equity`: exact enumeration (all hands known) and Monte Carlo (any random player)
-- [ ] RNG + card dealing helper
 - [ ] Equity tests (reference matchups, board-plays 50/50, MC vs exact)
 - [ ] `rivermath equity`
 - [ ] Fill in the resume numbers → **v1 done**

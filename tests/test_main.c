@@ -11,6 +11,8 @@ int main(int argc, char **argv) {
     suite_bits();
     printf("card\n");
     suite_card();
+    printf("random\n");
+    suite_random();
     printf("evaluate\n");
     suite_evaluate();
     if (run_full) {

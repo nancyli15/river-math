@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "rivermath/evaluate.h"
+#include "rivermath/random.h"
 #include "test.h"
 
 typedef rm_hand_value (*evaluator_fn)(rm_cards hand);
@@ -13,6 +14,7 @@ typedef struct {
 static const named_evaluator EVALUATORS[] = {
     {"naive", rm_evaluate_naive},
     {"bitwise", rm_evaluate_bitwise},
+    {"lookup", rm_evaluate_lookup},
 };
 enum { NUM_EVALUATORS = sizeof EVALUATORS / sizeof EVALUATORS[0] };
 
@@ -181,8 +183,31 @@ static void test_all_five_card_hands_bitwise(void) {
     check_all_hands(5, rm_evaluate_bitwise, rm_evaluate_naive, FIVE_CARD_COUNTS, 7462);
 }
 
+/* A fast sample for `make test`; the full 133M-hand check is in suite_evaluate_full. */
+static void test_random_seven_card_hands_all_agree(void) {
+    rm_random random;
+    rm_random_seed(&random, 2026);
+    int num_disagreements = 0;
+    for (int i = 0; i < 200000; i++) {
+        rm_cards hand = rm_deal_random_cards(&random, RM_FULL_DECK, 7);
+        rm_hand_value expected = rm_evaluate_naive(hand);
+        if (rm_evaluate_bitwise(hand) != expected) num_disagreements++;
+        if (rm_evaluate_lookup(hand) != expected) num_disagreements++;
+    }
+    CHECK_EQ(num_disagreements, 0);
+}
+
+static void test_lookup_tables_are_small(void) {
+    /* A table indexed directly by key would be about 31 MB. */
+    CHECK(rm_lookup_table_bytes() < 1024 * 1024);
+}
+
 static void test_all_seven_card_hands_bitwise_vs_naive(void) {
     check_all_hands(7, rm_evaluate_bitwise, rm_evaluate_naive, SEVEN_CARD_COUNTS, 4824);
+}
+
+static void test_all_seven_card_hands_lookup_vs_bitwise(void) {
+    check_all_hands(7, rm_evaluate_lookup, rm_evaluate_bitwise, SEVEN_CARD_COUNTS, 4824);
 }
 
 void suite_evaluate(void) {
@@ -193,8 +218,11 @@ void suite_evaluate(void) {
     RUN_TEST(test_describe);
     RUN_TEST(test_all_five_card_hands_naive);
     RUN_TEST(test_all_five_card_hands_bitwise);
+    RUN_TEST(test_random_seven_card_hands_all_agree);
+    RUN_TEST(test_lookup_tables_are_small);
 }
 
 void suite_evaluate_full(void) {
     RUN_TEST(test_all_seven_card_hands_bitwise_vs_naive);
+    RUN_TEST(test_all_seven_card_hands_lookup_vs_bitwise);
 }

@@ -4,8 +4,8 @@
 
 A fast Texas Hold'em hand evaluator and multi-player equity calculator in C.
 
-> Status: **M1 done**. The naive and bitwise evaluators agree on all 133,784,560 seven-card hands.
-> The lookup evaluator, benchmark and equity calculator are coming. See [PLAN.md](PLAN.md) for the roadmap and
+> Status: **M2 done**. Three evaluators (naive, bitwise, perfect-hash lookup) agree on all
+> 133,784,560 seven-card hands. The equity calculator is coming. See [PLAN.md](PLAN.md) for the roadmap and
 > [CONCEPTS.md](CONCEPTS.md) for the poker, math and algorithms background.
 
 ## Build
@@ -19,6 +19,19 @@ make test-full               # release build, also checks every 7-card hand (~1.
 make run ARGS="cards AhKd"   # build and run the CLI
 make clean
 ```
+
+## Benchmark
+
+`rivermath bench` evaluates 1,048,576 random 7-card hands (fixed seed), median of 5 runs, single thread.
+Apple M3, Apple clang 21, `-O3`. Lowest of two runs shown:
+
+| Evaluator | Hands/sec | ns/hand | vs naive |
+|---|---|---|---|
+| naive (best of 21 five-card subsets) | 1.0 M | 1026 | 1x |
+| bitwise (no tables) | 68.7 M | 14.6 | 70x |
+| lookup (perfect hash, 466 KB of tables) | 371 M | 2.7 | 381x |
+
+The lookup tables are built at startup in about 250 ms.
 
 ## Usage
 
